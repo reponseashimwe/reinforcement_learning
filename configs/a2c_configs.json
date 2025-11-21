@@ -1,0 +1,124 @@
+{
+  "configs": [
+    {
+      "id": "a2c_baseline",
+      "description": "Baseline A2C configuration",
+      "learning_rate": 0.0007,
+      "gamma": 0.99,
+      "n_steps": 5,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.01,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    },
+    {
+      "id": "a2c_high_lr",
+      "description": "Higher learning rate",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "n_steps": 5,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.01,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    },
+    {
+      "id": "a2c_low_lr",
+      "description": "Lower learning rate for stability",
+      "learning_rate": 0.0003,
+      "gamma": 0.99,
+      "n_steps": 5,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.01,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    },
+    {
+      "id": "a2c_longer_rollout",
+      "description": "Longer n-step rollouts",
+      "learning_rate": 0.0007,
+      "gamma": 0.99,
+      "n_steps": 16,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.01,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    },
+    {
+      "id": "a2c_short_rollout",
+      "description": "Very short rollouts for fast updates",
+      "learning_rate": 0.0007,
+      "gamma": 0.99,
+      "n_steps": 3,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.01,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    },
+    {
+      "id": "a2c_high_entropy",
+      "description": "Higher entropy for exploration",
+      "learning_rate": 0.0007,
+      "gamma": 0.99,
+      "n_steps": 5,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.05,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    },
+    {
+      "id": "a2c_no_entropy",
+      "description": "Zero entropy for exploitation",
+      "learning_rate": 0.0007,
+      "gamma": 0.99,
+      "n_steps": 5,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.0,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    },
+    {
+      "id": "a2c_high_vf_coef",
+      "description": "Higher value function coefficient",
+      "learning_rate": 0.0007,
+      "gamma": 0.99,
+      "n_steps": 5,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.01,
+      "vf_coef": 1.0,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    },
+    {
+      "id": "a2c_normalized",
+      "description": "With advantage normalization",
+      "learning_rate": 0.0007,
+      "gamma": 0.99,
+      "n_steps": 5,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.01,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": true
+    },
+    {
+      "id": "a2c_high_gamma",
+      "description": "Higher discount factor for long-term planning",
+      "learning_rate": 0.0007,
+      "gamma": 0.995,
+      "n_steps": 8,
+      "gae_lambda": 1.0,
+      "ent_coef": 0.01,
+      "vf_coef": 0.5,
+      "max_grad_norm": 0.5,
+      "normalize_advantage": false
+    }
+  ]
+}

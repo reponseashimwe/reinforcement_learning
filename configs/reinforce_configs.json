@@ -1,0 +1,104 @@
+{
+  "configs": [
+    {
+      "id": "reinforce_baseline",
+      "description": "Baseline REINFORCE configuration",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_dims": [128, 128],
+      "use_baseline": false,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.01
+    },
+    {
+      "id": "reinforce_with_baseline",
+      "description": "REINFORCE with value function baseline",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_dims": [128, 128],
+      "use_baseline": true,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.01
+    },
+    {
+      "id": "reinforce_high_lr",
+      "description": "Higher learning rate",
+      "learning_rate": 0.003,
+      "gamma": 0.99,
+      "hidden_dims": [128, 128],
+      "use_baseline": false,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.01
+    },
+    {
+      "id": "reinforce_low_lr",
+      "description": "Lower learning rate for stability",
+      "learning_rate": 0.0003,
+      "gamma": 0.99,
+      "hidden_dims": [128, 128],
+      "use_baseline": false,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.01
+    },
+    {
+      "id": "reinforce_large_network",
+      "description": "Larger policy network",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_dims": [256, 256],
+      "use_baseline": false,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.01
+    },
+    {
+      "id": "reinforce_small_network",
+      "description": "Smaller policy network",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_dims": [64, 64],
+      "use_baseline": false,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.01
+    },
+    {
+      "id": "reinforce_deep_network",
+      "description": "Deeper policy network",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_dims": [128, 128, 128],
+      "use_baseline": false,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.01
+    },
+    {
+      "id": "reinforce_high_entropy",
+      "description": "Higher entropy for exploration",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_dims": [128, 128],
+      "use_baseline": false,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.05
+    },
+    {
+      "id": "reinforce_no_entropy",
+      "description": "No entropy bonus",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_dims": [128, 128],
+      "use_baseline": false,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.0
+    },
+    {
+      "id": "reinforce_high_gamma",
+      "description": "Higher discount factor with baseline",
+      "learning_rate": 0.001,
+      "gamma": 0.995,
+      "hidden_dims": [128, 128],
+      "use_baseline": true,
+      "max_grad_norm": 0.5,
+      "entropy_coef": 0.01
+    }
+  ]
+}
