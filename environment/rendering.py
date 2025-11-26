@@ -108,6 +108,11 @@ class ClinicRenderer:
             self._add_action_to_history(action, reward)
             self._draw_action_history()
 
+        # Handle pygame events to keep window responsive
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pass  # Let caller handle cleanup
+        
         # Update display
         pygame.display.flip()
         self.clock.tick(self.fps)

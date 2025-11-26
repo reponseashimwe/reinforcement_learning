@@ -2,14 +2,25 @@
 
 A comprehensive reinforcement learning project implementing an intelligent medical triage system for a dermatology clinic. This project compares four state-of-the-art RL algorithms (DQN, PPO, A2C, REINFORCE) on a custom healthcare environment with multi-objective optimization.
 
-## 🎯 Project Overview
+## Problem Statement
+
+Healthcare facilities, particularly dermatology clinics, face significant challenges in efficiently triaging patients while maintaining high diagnostic accuracy. Manual triage processes are time-consuming, subject to human error, and struggle to balance multiple competing objectives simultaneously. The core problems include:
+
+1. **Diagnostic Accuracy**: Correctly classifying patient severity (Mild, Moderate, Severe, Critical) based on partial information
+2. **Resource Management**: Dynamically allocating limited exam rooms to optimize patient flow
+3. **Wait Time Optimization**: Minimizing patient wait times, especially for critical cases
+4. **Multi-Objective Optimization**: Balancing accuracy, efficiency, and resource costs in real-time
+
+This project develops an intelligent RL-based triage system that learns optimal policies to address these challenges, demonstrating that automated systems can achieve near-perfect accuracy (99.6% with PPO) while efficiently managing clinic resources.
+
+## Project Overview
 
 This project addresses the challenge of automated medical triage in a resource-constrained dermatology clinic. An RL agent learns to:
 
--   **Triage patients** based on symptom severity (Mild, Moderate, Severe, Critical)
--   **Manage resources** by dynamically opening/closing exam rooms
--   **Optimize wait times** while maintaining diagnostic accuracy
--   **Balance competing objectives** (accuracy, efficiency, cost)
+-   Triage patients based on symptom severity (Mild, Moderate, Severe, Critical)
+-   Manage resources by dynamically opening/closing exam rooms
+-   Optimize wait times while maintaining diagnostic accuracy
+-   Balance competing objectives (accuracy, efficiency, cost)
 
 ### Key Features
 
@@ -19,7 +30,7 @@ This project addresses the challenge of automated medical triage in a resource-c
 -   **Extensive Hyperparameter Tuning**: 40+ configurations across 4 algorithms
 -   **Professional Visualization**: Pygame-based rendering with real-time metrics
 
-## 📊 Results Summary
+## Results Summary
 
 | Algorithm     | Mean Reward | Accuracy  | Convergence    | Best For                     |
 | ------------- | ----------- | --------- | -------------- | ---------------------------- |
@@ -30,41 +41,79 @@ This project addresses the challenge of automated medical triage in a resource-c
 
 **Winner**: PPO achieves the best balance with near-perfect triage accuracy (99.6%) and high reward.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
 ```bash
 # Clone repository
-git clone https://github.com/[username]/[yourname]_rl_summative.git
-cd reinforcement_learning
+git clone https://github.com/reponseashimwe/reinforcement_learning_triage.git
+cd reinforcement_learning_triage
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-### Run Best Model
+### Run Best Model (PPO)
+
+The `main.py` script has sensible defaults and can be run without any arguments:
 
 ```bash
-python main.py --model_type ppo \
-  --model_path models/ppo/ppo_short_horizon_sweep.zip \
-  --run_demo --render_mode ansi
+# Run with defaults (PPO model, 10 evaluation episodes)
+python main.py
+
+# Run simulation with GUI and Terminal verbose output (RECOMMENDED FOR DEMO)
+python main.py --run_demo --save_video demos/simulation.mp4 --num_eval_episodes 3
+
+# Run with verbose terminal output only
+python main.py --run_demo --render_mode ansi
+
+# Generate video with GUI visualization only
+python main.py --save_video demos/my_demo.mp4
 ```
+
+**For Assignment Video Recording:**
+The recommended command shows both GUI (in the video) and terminal verbose outputs simultaneously:
+
+```bash
+python main.py --run_demo --save_video demos/simulation.mp4 --num_eval_episodes 3
+```
+
+This will:
+
+1. Display step-by-step actions and rewards in the terminal (verbose output)
+2. Generate a video file showing the GUI visualization with performance metrics
+3. Evaluate the model and print final statistics
+
+**Available Options:**
+
+-   `--model_type`: Model to load (default: `ppo`)
+-   `--model_path`: Path to model file (default: `models/ppo/ppo_short_horizon_sweep.zip`)
+-   `--run_demo`: Show step-by-step terminal output
+-   `--render_mode`: Rendering mode (`ansi`, `human`, `rgb_array`)
+-   `--save_video`: Path to save video
+-   `--num_eval_episodes`: Number of episodes to evaluate (default: 10)
+-   `--seed`: Random seed (default: 42)
 
 ### Generate Report Materials
 
 ```bash
-# Extract results from notebooks
+# Step 1: Extract results from notebooks
 python extract_notebook_results.py
 
-# Generate comparison plots
+# Step 2: Generate comparison plots
 python generate_plots.py
 
-# Generate demo videos
+# Step 3: Generate demo videos (30 seconds each)
 python generate_videos.py
 ```
 
-## 📁 Project Structure
+**Generated Files:**
+
+-   **Plots**: `evaluation/plots/figure1_*.png`, `figure2_*.png`, `figure3_*.png`
+-   **Videos**: `demos/random_demo.mp4` (random agent), `demos/ppo_demo.mp4` (trained agent)
+
+## Project Structure
 
 ```
 reinforcement_learning/
@@ -99,7 +148,7 @@ reinforcement_learning/
 └── README.md               # This file
 ```
 
-## 🎮 Environment Details
+## Environment Details
 
 ### Observation Space (15 dimensions)
 
@@ -132,12 +181,24 @@ reinforcement_learning/
 ```
 R(s, a) = R_triage + R_wait + R_resource
 
-R_triage:   +1.0 to +3.0 for correct triage, -1.5 for incorrect
-R_wait:     -0.01 × queue_length (per step)
-R_resource: -0.05 × num_open_rooms (per step)
+R_triage (correct):
+  - Severity 0 (Mild):     +1.0
+  - Severity 1 (Moderate): +1.25
+  - Severity 2 (Severe):   +2.0
+  - Severity 3 (Critical): +3.0 if wait_time < 5, else +2.0
+
+R_triage (incorrect):
+  - Base penalty: -2.0 × severity_multiplier
+  - Severity multipliers: {0: 1.0, 1: 1.2, 2: 1.6, 3: 2.2}
+  - Actual penalties: -2.0, -2.4, -3.2, -4.4
+
+R_wait:     -0.01 × wait_increment, where wait_increment = 0.01 × queue_length (per step)
+R_resource: -0.02 × num_open_rooms (per step)
+
+Total reward is clipped to [-6.0, 6.0]
 ```
 
-## 🧪 Training Details
+## Training Details
 
 ### Algorithms Implemented
 
@@ -177,7 +238,7 @@ Each algorithm was trained with 10 different hyperparameter configurations:
 -   **Total compute time**: ~180 GPU hours
 -   **Best configs selected** based on triage accuracy and reward
 
-## 📈 Key Findings
+## Key Findings
 
 ### 1. PPO Dominates for Healthcare Applications
 
@@ -205,20 +266,36 @@ Each algorithm was trained with 10 different hyperparameter configurations:
 -   Lower accuracy but higher overall reward
 -   Experience replay helps with rare events
 
-## 🎬 Visualizations
+## Visualizations
 
 ### Generated Plots
 
-1. **Figure 1**: Algorithm Performance Comparison (Reward + Accuracy)
-2. **Figure 2**: Normalized Performance Comparison
-3. **Figure 3**: Convergence Speed Analysis
+#### Figure 1: Algorithm Performance Comparison (Reward + Accuracy)
+
+![Algorithm Performance Comparison](https://raw.githubusercontent.com/reponseashimwe/reinforcement_learning_triage/main/evaluation/plots/figure1_algorithm_comparison.png)
+
+This figure compares the performance of all four algorithms (DQN, PPO, A2C, REINFORCE) across multiple metrics including mean reward and triage accuracy. PPO demonstrates superior accuracy (99.6%) while maintaining high reward.
+
+#### Figure 2: Normalized Performance Comparison
+
+![Normalized Performance Comparison](https://raw.githubusercontent.com/reponseashimwe/reinforcement_learning_triage/main/evaluation/plots/figure2_combined_comparison.png)
+
+This visualization shows normalized performance metrics across all algorithms, allowing for fair comparison despite different reward scales. Highlights the trade-offs between accuracy and overall reward optimization.
+
+#### Figure 3: Convergence Speed Analysis
+
+![Convergence Speed Analysis](https://raw.githubusercontent.com/reponseashimwe/reinforcement_learning_triage/main/evaluation/plots/figure3_convergence_comparison.png)
+
+Analyzes the training convergence speed for each algorithm, showing episodes required to reach stable performance. PPO converges fastest (~150 episodes), while REINFORCE requires more training time.
+
+**View all plots**: [evaluation/plots/](https://github.com/reponseashimwe/reinforcement_learning_triage/tree/main/evaluation/plots)
 
 ### Demo Videos
 
 -   **Random Agent** (30s): Baseline performance (~12.5% accuracy)
 -   **Trained PPO Agent** (30s): Near-perfect triage (99.6% accuracy)
 
-## 🔧 Development
+## Development
 
 ### Training a New Model
 
@@ -253,14 +330,12 @@ python main.py --model_type ppo \
   --save_video demos/my_demo.mp4
 ```
 
-## 📚 Documentation
+## Documentation
 
--   **REPORT.md**: Complete project report with methodology, results, and analysis
 -   **task.md**: Original assignment requirements
 -   **usecase.md**: Detailed environment documentation
--   **RUN_THIS.md**: Step-by-step execution guide
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 -   **Python 3.10+**
 -   **Gymnasium**: Environment framework
@@ -270,7 +345,7 @@ python main.py --model_type ppo \
 -   **Matplotlib/Seaborn**: Plotting and analysis
 -   **ImageIO**: Video generation
 
-## 📊 Performance Metrics
+## Performance Metrics
 
 ### Triage Accuracy by Severity
 
@@ -290,7 +365,7 @@ python main.py --model_type ppo \
 | DQN       | 200 ± 25             | 100,000   | ~60 min       |
 | REINFORCE | 300+ ± 50            | 150,000+  | ~90 min       |
 
-## 🚧 Future Improvements
+## Future Improvements
 
 1. **Environment Enhancements**
 
@@ -309,25 +384,20 @@ python main.py --model_type ppo \
     - Human-in-the-loop approval
     - Continual learning from new data
 
-## 📄 License
+## License
 
 This project was developed as part of an academic assignment. All rights reserved.
 
-## 👤 Author
+## Author
 
-**[Your Name]**  
-Student ID: [Your ID]  
+Reponse Ashimwe  
 Institution: African Leadership University  
 Course: Reinforcement Learning  
 Date: November 2025
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 -   Assignment designed by ALU Faculty
 -   Stable Baselines3 library by DLR-RM
 -   Gymnasium framework by Farama Foundation
 -   Google Colab for GPU compute resources
-
----
-
-**For detailed methodology, results, and analysis, see [REPORT.md](REPORT.md)**

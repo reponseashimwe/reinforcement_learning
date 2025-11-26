@@ -19,7 +19,7 @@ class ClinicEnv(gym.Env):
     Obs: [age, duration, fever, infection, 8 symptom dims, room_avail, queue_len, time_of_day] (15,)
     Actions (Discrete 8): 0=doctor,1=nurse,2=remote,3=escalate,4=defer,5=idle,6=open_room,7=close_room
     """
-    metadata = {"render_modes": ["rgb_array"], "render_fps": 6}
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 6}
 
     def __init__(self, seed: int = 0, max_steps: int = 500):
         super().__init__()
@@ -36,6 +36,13 @@ class ClinicEnv(gym.Env):
         self.current_patient = None
         self.total_wait = 0.0
         self.last_render = None
+        
+        # Rendering
+        self.renderer = None
+        self.render_mode = None
+        self.last_action = None
+        self.last_reward = 0.0
+        self.last_info = {}
         
         # Episode statistics tracking
         self.episode_stats = {
@@ -209,30 +216,81 @@ class ClinicEnv(gym.Env):
         info["queue_length"] = len(self.queue)
         info["triage_reward_component"] = float(reward)
         info["episode_stats"] = self.episode_stats.copy()
+        
+        # Store for rendering
+        self.last_action = action
+        self.last_reward = reward
+        self.last_info = info.copy()
 
         # Gym API: step must return (obs, reward, terminated, truncated, info)
         return obs, reward, terminated, truncated, info
 
-    def render(self, mode="rgb_array") -> np.ndarray:
-        H, W = 240, 360
-        canvas = np.ones((H, W, 3), dtype=np.uint8) * 255
-        sev = self.current_patient["severity"] if self.current_patient else 0
-        sev_norm = sev / 3.0
-        color = np.array([int(255 * sev_norm), int(180 * (1 - sev_norm)), 60], dtype=np.uint8)
-        canvas[20:200, 20:60] = color
-        q_len = len(self.queue)
-        q_h = min(q_len * 15, 150)
-        canvas[20:20+q_h, 80:100] = [80, 80, 255]
-        r = self.num_open_rooms
-        r_h = min(r * 20, 150)
-        canvas[20:20+r_h, 120:140] = [50, 200, 50]
-        sym = self.current_patient["symptom_embed"] if self.current_patient else np.zeros(8)
-        for i, val in enumerate(sym):
-            x0 = 160 + i*20
-            height = int(120 * val)
-            canvas[150-height:150, x0:x0+12] = [int(100+150*val), int(100*(1-val)), int(50)]
-        self.last_render = canvas
-        return canvas
+    def render(self, mode="rgb_array") -> Optional[np.ndarray]:
+        """
+        Render the environment.
+        
+        Args:
+            mode: Rendering mode - "human" for interactive display, "rgb_array" for numpy array
+            
+        Returns:
+            RGB array if mode is "rgb_array", None if mode is "human"
+        """
+        # Initialize renderer if needed
+        if self.renderer is None or self.render_mode != mode:
+            if mode == "human":
+                from environment.rendering import ClinicRenderer
+                self.renderer = ClinicRenderer()
+                self.render_mode = mode
+        
+        # Prepare state dictionary for renderer
+        patient = self.current_patient if self.current_patient else {}
+        state_dict = {
+            "current_severity": int(patient.get("severity", 0)),
+            "queue_length": len(self.queue),
+            "num_open_rooms": int(self.num_open_rooms),
+            "correct_action": self.last_info.get("correct_action", 0),
+            "episode_stats": self.episode_stats.copy(),
+            "fever_flag": float(patient.get("fever_flag", 0.0)),
+            "infection_flag": float(patient.get("infection_flag", 0.0))
+        }
+        
+        if mode == "human":
+            # Interactive display mode
+            if self.renderer:
+                frame = self.renderer.render(state_dict, self.last_action, self.last_reward)
+                # Handle pygame events to keep window responsive
+                import pygame
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.close()
+                return None
+        else:
+            # rgb_array mode - use simple numpy rendering for compatibility
+            H, W = 240, 360
+            canvas = np.ones((H, W, 3), dtype=np.uint8) * 255
+            sev = patient.get("severity", 0)
+            sev_norm = sev / 3.0
+            color = np.array([int(255 * sev_norm), int(180 * (1 - sev_norm)), 60], dtype=np.uint8)
+            canvas[20:200, 20:60] = color
+            q_len = len(self.queue)
+            q_h = min(q_len * 15, 150)
+            canvas[20:20+q_h, 80:100] = [80, 80, 255]
+            r = self.num_open_rooms
+            r_h = min(r * 20, 150)
+            canvas[20:20+r_h, 120:140] = [50, 200, 50]
+            sym = patient.get("symptom_embed", np.zeros(8))
+            for i, val in enumerate(sym):
+                x0 = 160 + i*20
+                height = int(120 * val)
+                canvas[150-height:150, x0:x0+12] = [int(100+150*val), int(100*(1-val)), int(50)]
+            self.last_render = canvas
+            return canvas
+    
+    def close(self):
+        """Close rendering resources."""
+        if self.renderer:
+            self.renderer.close()
+            self.renderer = None
 
 # Helper function for creating vectorized environments
 def make_env(seed: int = 0, max_steps: int = 500):
